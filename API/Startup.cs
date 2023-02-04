@@ -1,4 +1,5 @@
 using API.Helpers;
+using API.Middleware;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
@@ -48,12 +49,17 @@ namespace API
 
             app.UseHttpsRedirection();
 
+            //Middleware to handle error 500 and generate json message
+            app.UseMiddleware<ExceptionMiddleware>();
+            //Middleware to hande errors like 400, 404 etc
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
             app.UseRouting();
 
             app.UseStaticFiles();
 
             app.UseAuthorization();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

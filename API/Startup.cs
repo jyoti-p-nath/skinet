@@ -15,11 +15,8 @@ namespace API
 
         public Startup(IConfiguration configuration)
         {
-            //Configuration = configuration;
             _configuration = configuration;
         }
-
-        //public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -28,6 +25,12 @@ namespace API
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddAutoMapper(typeof(MappingProfiles));
+
+            services.AddCors(options => {
+                options.AddPolicy("devcorsPolicy", builder => {
+                    builder.WithOrigins(_configuration["ClientUrl"]).AllowAnyMethod().AllowAnyHeader();
+                });
+            });
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -46,13 +49,15 @@ namespace API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPIv5 v1"));
             }
-
+            
             app.UseHttpsRedirection();
 
             //Middleware to handle error 500 and generate json message
             app.UseMiddleware<ExceptionMiddleware>();
             //Middleware to hande errors like 400, 404 etc
             app.UseStatusCodePagesWithReExecute("/errors/{0}");
+            //Use CORS (Cross Origin Request)
+            app.UseCors("devcorsPolicy");
 
             app.UseRouting();
 

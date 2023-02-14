@@ -7,6 +7,7 @@ using Core.Specifications;
 using API.Dtos;
 using AutoMapper;
 using API.Helpers;
+using API.Errors;
 
 namespace API.Controllers
 {
@@ -51,7 +52,9 @@ namespace API.Controllers
 
             var data = _mapper.Map<Product, ProductToReturnDto>(product);
 
-            return data;
+            if(data == null)
+                return NotFound(new ApiResponse(404));
+            return Ok(data);
         }
 
         [HttpGet("brands")]

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 namespace API
 {
@@ -22,6 +23,14 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
             //Add repository for http request scope
+            services.AddDbContext<StoreContext>(x=> x.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
+            services.AddSingleton<IConnectionMultiplexer>(c => 
+            {
+                var options = ConfigurationOptions.Parse(_configuration.GetConnectionString("Redis"));
+                return ConnectionMultiplexer.Connect(options);
+            });
+
+            services.AddScoped<IBasketRepository, BasketRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddAutoMapper(typeof(MappingProfiles));
@@ -37,7 +46,7 @@ namespace API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
             });
-            services.AddDbContext<StoreContext>(x=> x.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

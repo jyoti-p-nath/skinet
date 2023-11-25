@@ -1,0 +1,5 @@
+<div class="container">
+    <div *ngIf="(basketService.basketSource$ | async) === null">
+        <p>There are no items in your basket.</p>
+    </div>
+</div>
